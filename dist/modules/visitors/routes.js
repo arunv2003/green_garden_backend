@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const controller_js_1 = require("./controller.js");
+const auth_js_1 = require("../../middlewares/auth.js");
+const validate_js_1 = require("../../middlewares/validate.js");
+const validation_js_1 = require("./validation.js");
+const router = (0, express_1.Router)();
+router.get("/", auth_js_1.authenticateUser, controller_js_1.VisitorController.getAllVisitors);
+router.get("/inside", auth_js_1.authenticateUser, controller_js_1.VisitorController.getInsideVisitors);
+router.post("/", auth_js_1.authenticateUser, (0, validate_js_1.validateBody)(validation_js_1.createVisitorSchema), controller_js_1.VisitorController.logVisitorEntry);
+router.post("/:id/exit", auth_js_1.authenticateUser, (0, validate_js_1.validateBody)(validation_js_1.exitVisitorSchema), controller_js_1.VisitorController.recordVisitorExit);
+router.put("/:id", auth_js_1.authenticateUser, controller_js_1.VisitorController.updateVisitor);
+router.delete("/:id", auth_js_1.authenticateUser, controller_js_1.VisitorController.deleteVisitor);
+exports.default = router;
