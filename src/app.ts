@@ -67,6 +67,8 @@ app.use("/api/reports", reportsRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/staff", staffRouter);
 
+
+
 // Legacy routes preserved during migration
 app.use("/api/rooms", roomsRouter);
 app.use("/api/guests", guestsRouter);
