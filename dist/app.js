@@ -32,8 +32,30 @@ const routes_js_18 = __importDefault(require("./modules/bills/routes.js"));
 const app = (0, express_1.default)();
 // Security and utility middlewares
 app.use((0, helmet_1.default)());
+const rawOrigins = (index_js_1.config.frontendUrl || "")
+    .split(",")
+    .map((url) => url.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+const defaultOrigins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://green-garden.arunverma.online",
+];
+const allowedOrigins = Array.from(new Set([...rawOrigins, ...defaultOrigins]));
 app.use((0, cors_1.default)({
-    origin: [index_js_1.config.frontendUrl, "http://localhost:3000", "http://127.0.0.1:3000"],
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like server-to-server, mobile apps, curl)
+        if (!origin)
+            return callback(null, true);
+        const cleanOrigin = origin.replace(/\/+$/, "");
+        const isAllowed = allowedOrigins.includes(cleanOrigin) ||
+            cleanOrigin.endsWith(".vercel.app") ||
+            cleanOrigin.includes("arunverma.online");
+        if (isAllowed) {
+            return callback(null, true);
+        }
+        return callback(new Error(`CORS error: Origin ${origin} is not allowed`));
+    },
     credentials: true,
 }));
 app.use((0, morgan_1.default)("dev"));

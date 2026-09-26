@@ -31,9 +31,36 @@ const app = express();
 
 // Security and utility middlewares
 app.use(helmet());
+const rawOrigins = (config.frontendUrl || "")
+  .split(",")
+  .map((url) => url.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
+
+const defaultOrigins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "https://green-garden.arunverma.online",
+];
+
+const allowedOrigins = Array.from(new Set([...rawOrigins, ...defaultOrigins]));
+
 app.use(
   cors({
-    origin: [config.frontendUrl, "http://localhost:3000", "http://127.0.0.1:3000"],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like server-to-server, mobile apps, curl)
+      if (!origin) return callback(null, true);
+
+      const cleanOrigin = origin.replace(/\/+$/, "");
+      const isAllowed =
+        allowedOrigins.includes(cleanOrigin) ||
+        cleanOrigin.endsWith(".vercel.app") ||
+        cleanOrigin.includes("arunverma.online");
+
+      if (isAllowed) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS error: Origin ${origin} is not allowed`));
+    },
     credentials: true,
   })
 );
