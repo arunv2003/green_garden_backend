@@ -37,12 +37,16 @@ const parseDbConfig = () => {
 
 export const dbConfig = parseDbConfig();
 
+const isRemoteHost = dbConfig.host !== "localhost" && dbConfig.host !== "127.0.0.1";
+const sslConfig = isRemoteHost ? { minVersion: "TLSv1.2", rejectUnauthorized: true } : undefined;
+
 export const poolConnection = mysql.createPool({
   host: dbConfig.host,
   port: dbConfig.port,
   user: dbConfig.user,
   password: dbConfig.password,
   database: dbConfig.database,
+  ssl: sslConfig,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -52,11 +56,13 @@ export const db = drizzle(poolConnection, { schema, mode: "default" });
 
 export async function ensureDatabaseExists() {
   const { host, port, user, password, database } = dbConfig;
+  const isRemote = host !== "localhost" && host !== "127.0.0.1";
   const connection = await mysql.createConnection({
     host,
     port,
     user,
     password,
+    ssl: isRemote ? { minVersion: "TLSv1.2", rejectUnauthorized: true } : undefined,
   });
 
   try {

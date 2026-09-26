@@ -74,12 +74,15 @@ const parseDbConfig = () => {
     }
 };
 exports.dbConfig = parseDbConfig();
+const isRemoteHost = exports.dbConfig.host !== "localhost" && exports.dbConfig.host !== "127.0.0.1";
+const sslConfig = isRemoteHost ? { minVersion: "TLSv1.2", rejectUnauthorized: true } : undefined;
 exports.poolConnection = promise_1.default.createPool({
     host: exports.dbConfig.host,
     port: exports.dbConfig.port,
     user: exports.dbConfig.user,
     password: exports.dbConfig.password,
     database: exports.dbConfig.database,
+    ssl: sslConfig,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
@@ -87,11 +90,13 @@ exports.poolConnection = promise_1.default.createPool({
 exports.db = (0, mysql2_1.drizzle)(exports.poolConnection, { schema, mode: "default" });
 async function ensureDatabaseExists() {
     const { host, port, user, password, database } = exports.dbConfig;
+    const isRemote = host !== "localhost" && host !== "127.0.0.1";
     const connection = await promise_1.default.createConnection({
         host,
         port,
         user,
         password,
+        ssl: isRemote ? { minVersion: "TLSv1.2", rejectUnauthorized: true } : undefined,
     });
     try {
         await connection.query(`CREATE DATABASE IF NOT EXISTS \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`);

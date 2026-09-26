@@ -4,7 +4,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 export default defineConfig({
-  schema: ["./src/db/schema/*", "./src/modules/*/*.schema.ts"],
+  schema: "./dist/db/schema/index.js",
   out: "./src/db/migrations",
   dialect: "mysql",
   dbCredentials: {
